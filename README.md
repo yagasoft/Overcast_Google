@@ -1,7 +1,7 @@
-Overcast - Dropbox implementation v1.20.0250
+Overcast - Google implementation v1.20.0250
 ===========================================
 
-An implementation of Overcast for Dropbox.
+An implementation of Overcast for Google.
 
 ### Features:
 

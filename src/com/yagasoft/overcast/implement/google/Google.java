@@ -60,7 +60,7 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 {
 
 	/** Constant: VERSION. */
-	public static final String VERSION = "1.20.0250";
+	public static final String VERSION = "1.05.0100";
 
 	/** The Google singleton. */
 	static private Google				instance;
