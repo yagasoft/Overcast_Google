@@ -182,6 +182,7 @@ public class RemoteFolder extends com.yagasoft.overcast.base.container.remote.Re
 		{
 			id = getSourceObject().getId();
 			name = getSourceObject().getTitle();
+			date = getSourceObject().getModifiedDate().getValue();
 			
 			if (name == null)
 			{
