@@ -1,17 +1,19 @@
 /*
  * Copyright (C) 2011-2014 by Ahmed Osama el-Sawalhy
- * 
+ *
  *		The Modified MIT Licence (GPL v3 compatible)
  * 			License terms are in a separate file (LICENCE.md)
- * 
+ *
  *		Project/File: Overcast/com.yagasoft.overcast.implement.google/UploadJob.java
- * 
+ *
  *			Modified: Apr 15, 2014 (1:54:35 PM)
  *			   Using: Eclipse J-EE / JDK 7 / Windows 8.1 x64
  */
 
 package com.yagasoft.overcast.implement.google.transfer;
 
+
+import java.util.concurrent.Future;
 
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
@@ -26,10 +28,9 @@ import com.yagasoft.overcast.implement.google.container.RemoteFolder;
  */
 public class UploadJob extends com.yagasoft.overcast.base.container.transfer.UploadJob<Drive.Files.Insert, File>
 {
-	
-	/** The canceller to cancel this transfer. */
-	Thread	canceller;
-	
+
+	Future<Void>	canceller;
+
 	/**
 	 * Instantiates a new upload job.
 	 *
@@ -43,44 +44,35 @@ public class UploadJob extends com.yagasoft.overcast.base.container.transfer.Upl
 	 *            Overwrite.
 	 * @param cspTransferer
 	 *            Csp transferer.
-	 * @param canceller
-	 *            Canceller.
 	 */
 	public UploadJob(LocalFile localFile, RemoteFile remoteFile, RemoteFolder parent, boolean overwrite
-			, Drive.Files.Insert cspTransferer, Thread canceller)
+			, Drive.Files.Insert cspTransferer)
 	{
 		super(localFile, remoteFile, parent, overwrite, cspTransferer);
-		this.canceller = canceller;
 	}
-	
-	/**
-	 * @see com.yagasoft.overcast.base.container.transfer.TransferJob#cancelTransfer()
-	 */
-	@SuppressWarnings("deprecation")
+
 	@Override
-	public void cancelTransfer()
+	public void cancelTransfer() throws UnsupportedOperationException
 	{
-		// Google doesn't have a cancel method, so I had to improvise.
-		canceller.stop();
-		notifyProgressListeners(TransferState.CANCELLED, 0.0f);
-		remoteFile.getCsp().resetUpload();
+		canceller.cancel(true);
+		notifyProgressListeners(TransferState.CANCELLED, 0);
 	}
-	
+
 	/**
 	 * @return the canceller
 	 */
-	public Thread getCanceller()
+	public Future<Void> getCanceller()
 	{
 		return canceller;
 	}
-	
+
 	/**
 	 * @param canceller
 	 *            the canceller to set
 	 */
-	public void setCanceller(Thread canceller)
+	public void setCanceller(Future<Void> canceller)
 	{
 		this.canceller = canceller;
 	}
-	
+
 }
