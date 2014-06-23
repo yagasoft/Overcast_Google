@@ -6,7 +6,7 @@
  *
  *		Project/File: Overcast_Google/com.yagasoft.overcast.implement.google/Google.java
  *
- *			Modified: 20-Jun-2014 (00:03:27)
+ *			Modified: 23-Jun-2014 (20:35:08)
  *			   Using: Eclipse J-EE / JDK 8 / Windows 8.1 x64
  */
 
@@ -88,7 +88,7 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 																											.getDefaultInstance();
 
 	/** The authorisation object. */
-	Authorisation																authorisation;
+	static Authorisation														authorisation;
 
 	/** The remote file factory. */
 	public static RemoteFactory<File, RemoteFolder, File, RemoteFile, Google>	factory;
@@ -124,7 +124,7 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 			factory = new RemoteFactory<File, RemoteFolder, File, RemoteFile, Google>(
 					this, RemoteFolder.class, RemoteFile.class, "/My Drive");
 
-			name = "Google Drive";
+			name = "Google";
 
 			Logger.info("done building google");
 		}
@@ -159,11 +159,33 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 	}
 
 	/**
+	 * Calls {@link #getInstance(String)}
+	 */
+	public static Google getInstance(String userId, String password) throws CSPBuildException, AuthorisationException
+	{
+		return getInstance(userId);
+	}
+
+	/**
+	 * @see com.yagasoft.overcast.base.csp.CSP#destroyInstance()
+	 */
+	@Override
+	public void destroyInstance()
+	{
+		instance = null;
+	}
+
+	/**
 	 * @see com.yagasoft.overcast.base.csp.CSP#initTree(IContentListener)
 	 */
 	@Override
 	public void initTree(IOperationListener listener) throws OperationException
 	{
+		if (remoteFileTree != null)
+		{
+			return;
+		}
+
 		try
 		{
 			remoteFileTree = factory.createFolder();
@@ -258,7 +280,7 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 		catch (IOException e)
 		{
 			// do nothing, probably because it's been cancelled
-			if (!e.getMessage().contains("Stream Closed"))
+			if ( !e.getMessage().contains("Stream Closed"))
 			{
 				Logger.error("downloading: " + currentDownloadJob.getRemoteFile().getPath());
 				Logger.except(e);
@@ -405,6 +427,12 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 	// //////////////////////////////////////////////////////////////////////////////////////
 	// #region Getters and setters.
 	// ======================================================================================
+
+	@Override
+	public Authorisation getAuthorisation()
+	{
+		return Google.authorisation;
+	}
 
 	/**
 	 * @return the httpTransport
