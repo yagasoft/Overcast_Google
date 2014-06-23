@@ -6,7 +6,7 @@
  *
  *		Project/File: Overcast_Google/com.yagasoft.overcast.implement.google/Google.java
  *
- *			Modified: 23-Jun-2014 (20:35:08)
+ *			Modified: 24-Jun-2014 (01:03:54)
  *			   Using: Eclipse J-EE / JDK 8 / Windows 8.1 x64
  */
 
@@ -105,7 +105,7 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 	 */
 	private Google(String userID) throws CSPBuildException, AuthorisationException
 	{
-		Logger.info("building google object");
+		Logger.info("GOOGLE: CSP: building main object");
 
 		try
 		{
@@ -126,11 +126,11 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 
 			name = "Google";
 
-			Logger.info("done building google");
+			Logger.info("GOOGLE: CSP: done building main object");
 		}
 		catch (IOException | GeneralSecurityException e)
 		{
-			Logger.error("failed in building google");
+			Logger.error("GOOGLE: CSP: failed in building main object");
 
 			e.printStackTrace();
 			throw new CSPBuildException("Can't construct CSP object! " + e.getMessage());
@@ -197,14 +197,29 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 				remoteFileTree.addOperationListener(listener, Operation.ADD);
 				remoteFileTree.addOperationListener(listener, Operation.REMOVE);
 			}
-
-			// buildFileTree(false);
 		}
 		catch (CreationException e)
 		{
-			Logger.error("can't initialise tree");
+			Logger.error("GOOGLE: CSP: TREE: failed initialise tree");
 			Logger.except(e);
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * @see com.yagasoft.overcast.base.csp.CSP#resetPermission()
+	 */
+	@Override
+	public void resetPermission() throws AuthorisationException, OperationException
+	{
+		authorisation.resetPermission();
+
+		driveService = new Drive.Builder(httpTransport, JSON_FACTORY, authorisation.credential)
+				.setApplicationName(APPLICATION_NAME).build();
+
+		if (!remoteFileTree.getChildrenList().isEmpty())
+		{
+			remoteFileTree.updateFromSource(true, false);
 		}
 	}
 
@@ -214,20 +229,20 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 	@Override
 	public long calculateRemoteFreeSpace() throws OperationException
 	{
-		Logger.info("getting google freespace");
+		Logger.info("GOOGLE: CSP: FREESPACE: fetching");
 
 		try
 		{
 			About about = driveService.about().get().execute();
 			remoteFreeSpace = about.getQuotaBytesTotal() - about.getQuotaBytesUsed();
 
-			Logger.info("got Google's free space");
+			Logger.info("GOOGLE: CSP: FREESPACE: success");
 
 			return remoteFreeSpace;
 		}
 		catch (IOException e)
 		{
-			Logger.error("failed to get free space: Google");
+			Logger.error("GOOGLE: CSP: FREESPACE: failed!");
 			Logger.except(e);
 			e.printStackTrace();
 
@@ -282,7 +297,7 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 			// do nothing, probably because it's been cancelled
 			if ( !e.getMessage().contains("Stream Closed"))
 			{
-				Logger.error("downloading: " + currentDownloadJob.getRemoteFile().getPath());
+				Logger.error("GOOGLE: CSP: DOWNLOAD: failed: " + currentDownloadJob.getRemoteFile().getPath());
 				Logger.except(e);
 				e.printStackTrace();
 
@@ -386,7 +401,7 @@ public class Google extends CSP<File, MediaHttpDownloader, Drive.Files.Insert> i
 		{}
 		catch (RuntimeException | ExecutionException | InterruptedException e)	// thrown from inside the thread
 		{
-			Logger.error("uploading: " + currentUploadJob.getLocalFile().getPath());
+			Logger.error("GOOGLE: CSP: UPLOAD: failed: " + currentUploadJob.getLocalFile().getPath());
 			Logger.except(e);
 			e.printStackTrace();
 

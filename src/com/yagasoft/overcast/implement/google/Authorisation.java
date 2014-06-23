@@ -39,27 +39,27 @@ import com.yagasoft.overcast.exception.AuthorisationException;
  */
 public class Authorisation extends OAuth
 {
-	
+
 	/** Directory to store user credentials. */
 	protected Path							dataStoreFolder;
-	
+
 	/** Data store factory. */
 	protected FileDataStoreFactory			dataStoreFactory;
-	
+
 	/** The credential. */
 	protected Credential					credential;
-	
+
 	/** The flow. */
 	protected GoogleAuthorizationCodeFlow	flow;
-	
+
 	/**
 	 * @param info
 	 */
 	public Authorisation(String infoFile) throws AuthorisationException
 	{
-		super("user", infoFile);
+		super("user", null, infoFile);
 	}
-	
+
 	/**
 	 * @param userID
 	 * @param password
@@ -68,9 +68,9 @@ public class Authorisation extends OAuth
 	 */
 	public Authorisation(String userID, String infoFile) throws AuthorisationException
 	{
-		super(userID, "", infoFile);
+		super(userID, null, infoFile);
 	}
-	
+
 	/**
 	 * @see com.yagasoft.overcast.base.csp.authorisation.Authorisation#authorise()
 	 */
@@ -80,71 +80,89 @@ public class Authorisation extends OAuth
 		// go online and get the token.
 		acquirePermission();
 	}
-	
+
 	/**
 	 * @see com.yagasoft.overcast.base.csp.authorisation.OAuth#acquirePermission()
 	 */
 	@Override
 	public void acquirePermission() throws AuthorisationException
 	{
-		Logger.info("authorising: Google");
-		
+		Logger.info("GOOGLE: AUTH: started ...");
+
 		// authorise
 		try
 		{
 			// the folder where Google API stores creds.
 			dataStoreFolder = tokenParent;
 			dataStoreFactory = new FileDataStoreFactory(dataStoreFolder.toFile());
-			
+
 			// load the JSON containing info required for identifying the dev account.
 			GoogleClientSecrets clientSecrets =
 					GoogleClientSecrets.load(Google.JSON_FACTORY,
 							new InputStreamReader(Files.newInputStream(infoFile)));
-			
+
 			// dev info contained in the JSON.
 			String clientId = clientSecrets.getDetails().getClientId();
 			String clientSecret = clientSecrets.getDetails().getClientSecret();
-			
+
 			// problem?!
 			if (clientId.startsWith("Enter") || clientSecret.startsWith("Enter"))
 			{
-				Logger.error("Enter Client ID and Secret from https://code.google.com/apis/console/?api=drive "
+				Logger.error("GOOGLE: AUTH: Enter Client ID and Secret from https://code.google.com/apis/console/?api=drive "
 						+ "into google_secrets.json");
-				
+
 				throw new AuthorisationException("Failed to authorise!");
 			}
-			
+
 			// set up authorisation code flow
 			flow = new GoogleAuthorizationCodeFlow.Builder(Google.httpTransport, Google.JSON_FACTORY, clientSecrets,
 					Collections.singleton(DriveScopes.DRIVE))
 					.setCredentialDataStore(getDataStore(dataStoreFactory, "google"))
 					.setAccessType("offline")
 					.build();
-			
+
 			credential = new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize(userID);
-			
-			Logger.info("authorisation successful: Google");
+
+			Logger.info("Google: AUTH: success");
 		}
 		catch (IOException e)
 		{
-			Logger.error("authorisation failed: Google");
+			Logger.error("Google: AUTH: failed");
 			Logger.except(e);
 			e.printStackTrace();
-			
+
 			throw new AuthorisationException("Failed to authorise! " + e.getMessage());
 		}
-		
+
 	}
-	
+
 	/**
 	 * @see com.yagasoft.overcast.base.csp.authorisation.OAuth#reacquirePermission()
 	 */
 	@Override
 	public void reacquirePermission() throws AuthorisationException
 	{
-		acquirePermission();
+		authorise();
 	}
-	
+
+	@Override
+	public void resetPermission() throws AuthorisationException
+	{
+		try
+		{
+			Files.deleteIfExists(tokenParent.resolve("google"));
+			authorise();
+		}
+		catch (IOException e)
+		{
+			Logger.error("GOOGLE: AUTH: failed to delete token file");
+			Logger.except(e);
+			e.printStackTrace();
+
+			throw new AuthorisationException("authorisation failed to delete token file: Google");
+		}
+	}
+
 	/**
 	 * @see com.yagasoft.overcast.base.csp.authorisation.OAuth#saveToken()
 	 */
@@ -153,7 +171,7 @@ public class Authorisation extends OAuth
 	{
 		throw new UnsupportedOperationException("Google handles saving tokens automatically!");
 	}
-	
+
 	/**
 	 * This method is taken from the Google API. I did so to be able to customise the name of the stored token file.<br />
 	 * <br />
@@ -187,7 +205,7 @@ public class Authorisation extends OAuth
 	{
 		return dataStoreFactory.getDataStore(storeId);
 	}
-	
+
 	/**
 	 * @return the credential
 	 */
@@ -195,7 +213,7 @@ public class Authorisation extends OAuth
 	{
 		return credential;
 	}
-	
+
 	/**
 	 * @param credential
 	 *            the credential to set
@@ -204,5 +222,5 @@ public class Authorisation extends OAuth
 	{
 		this.credential = credential;
 	}
-	
+
 }

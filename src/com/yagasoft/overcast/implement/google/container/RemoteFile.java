@@ -54,7 +54,7 @@ public class RemoteFile extends com.yagasoft.overcast.base.container.remote.Remo
 	@Override
 	public synchronized boolean isExist() throws OperationException
 	{
-		Logger.info("checking existence: " + path);
+		Logger.info("GOOGLE: FILE: checking existence: " + path);
 		
 		try
 		{
@@ -62,7 +62,7 @@ public class RemoteFile extends com.yagasoft.overcast.base.container.remote.Remo
 		}
 		catch (IOException e)
 		{
-			Logger.error("checking existence: " + path);
+			Logger.error("GOOGLE: FILE: failed to check existence: " + path);
 			Logger.except(e);
 			e.printStackTrace();
 			
@@ -119,18 +119,18 @@ public class RemoteFile extends com.yagasoft.overcast.base.container.remote.Remo
 	@Override
 	public synchronized void updateFromSource() throws OperationException
 	{
-		Logger.info("updating info from source: " + path);
+		Logger.info("GOOGLE: FILE: updating info from source: " + path);
 		
 		try
 		{
 			setSourceObject(Google.driveService.files().get((getSourceObject() == null) ? id : getSourceObject().getId())
 					.execute());
 			
-			Logger.info("finished updating info from source: " + path);
+			Logger.info("GOOGLE: FILE: finished updating info from source: " + path);
 		}
 		catch (IOException e)
 		{
-			Logger.error("updating info from source: " + path);
+			Logger.error("GOOGLE: FILE: failed to update info from source: " + path);
 			Logger.except(e);
 			e.printStackTrace();
 			
