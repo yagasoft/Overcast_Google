@@ -7,9 +7,18 @@ An implementation of Overcast for Google.
 
   Same as Overcast
 
-### Developers' notes:
+### Instructions:
 
-  + You have to manually download the libraries and import them into your project, for now.
+###### Dependencies:
+
+    +	Java 8
+	+	Overcast: https://github.com/os008/Overcast
+	+	Google Drive Java API: https://developers.google.com/api-client-library/java/apis/drive/v2
+	+	Logger: https://github.com/os008/Logger
+
+### Notes:
+
+  + You have to manually download the libraries and import them into your project.
 
 
 <br>
