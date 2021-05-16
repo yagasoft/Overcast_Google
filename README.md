@@ -1,6 +1,8 @@
 Overcast - Google implementation v1.05.0100
 ===========================================
 
+(No longer maintained!)
+
 An implementation of Overcast for Google.
 
 ### Features:
